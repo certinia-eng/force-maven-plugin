@@ -4,7 +4,7 @@
 
 	<groupId>com.financialforce.maven</groupId>
 	<artifactId>force-maven-plugin</artifactId>
-	<version>1.0.10-SNAPSHOT</version>
+	<version>1.0.12-SNAPSHOT</version>
 	<packaging>maven-plugin</packaging>
 
 	<name>force-maven-plugin Maven Plugin</name>

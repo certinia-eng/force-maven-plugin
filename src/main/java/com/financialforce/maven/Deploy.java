@@ -16,6 +16,7 @@ package com.financialforce.maven;
  * limitations under the License.
  */
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,6 +24,8 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -71,9 +74,13 @@ public class Deploy
     	try {
     		createMetadataConnection();
     		DeployOptions deployOptions = createDeployOptions();
-    		byte[] zip = zipFolder(createProjectFolder());
     		
-			String deployId = metadataConnection.deploy(zip, deployOptions ).getId();
+//            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+//            ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream);    		
+//    		zipFolder(createProjectFolder(), zipOutputStream);
+
+			String deployId = metadataConnection.deploy(Files.readAllBytes(Paths.get(projectBuildDir.substring(0,
+					projectBuildDir.lastIndexOf(File.separator)) + File.separator + "src.zip")), deployOptions ).getId();
 
 			// Wait for the deploy to complete
 	        int poll = 0;
@@ -141,13 +148,8 @@ public class Deploy
 		return deployOptions;
 	}
 
-	private byte[] zipFolder(final File folder) throws IOException {
-        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(); ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream)) {
-            processFolder(folder, zipOutputStream, folder.getPath().length() + 1);
-            OutputStream outputStream = new FileOutputStream (this.projectBuildDir + File.separator + "test.zip"); 
-            byteArrayOutputStream.writeTo(outputStream);
-            return byteArrayOutputStream.toByteArray();
-        }
+	private void zipFolder(final File folder, ZipOutputStream zipOutputStream) throws IOException {
+        processFolder(folder, zipOutputStream, folder.getPath().length() + 1);
     }
 
     private static void processFolder(final File folder,
