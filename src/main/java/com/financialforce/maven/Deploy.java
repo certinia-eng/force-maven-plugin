@@ -16,21 +16,19 @@ package com.financialforce.maven;
  * limitations under the License.
  */
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipOutputStream;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
 
-import org.apache.commons.io.IOUtils;
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.io.ZipOutputStream;
+import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.util.Zip4jConstants;
+
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -74,14 +72,84 @@ public class Deploy
     	try {
     		createMetadataConnection();
     		DeployOptions deployOptions = createDeployOptions();
+
+    		String sfProjectDir = projectBuildDir.substring(0, projectBuildDir.lastIndexOf(File.separator));
+
+			ZipOutputStream outputStream = null;
+			InputStream inputStream = null;
+			
+			try {
+				// Prepare the files to be added
+				List<File> filesToAdd = Arrays.asList(createProjectFolder().listFiles());
+				
+				outputStream = new ZipOutputStream(new FileOutputStream(new File(sfProjectDir + File.separator + "test.zip")));
+				
+				ZipParameters parameters = new ZipParameters();
+				
+				parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
+				parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_NORMAL);
+				
+				//Now we loop through each file and read this file with an inputstream
+				//and write it to the ZipOutputStream.
+				for (int i = 0; i < filesToAdd.size(); i++) {
+					File file = (File)filesToAdd.get(i);
+					
+					//This will initiate ZipOutputStream to include the file
+					//with the input parameters
+					outputStream.putNextEntry(file,parameters);
+					
+					//If this file is a directory, then no further processing is required
+					//and we close the entry (Please note that we do not close the outputstream yet)
+					if (file.isDirectory()) {
+						outputStream.closeEntry();
+						continue;
+					}
+					
+					//Initialize inputstream
+					inputStream = new FileInputStream(file);
+					byte[] readBuff = new byte[4096];
+					int readLen = -1;
+					
+					//Read the file content and write it to the OutputStream
+					while ((readLen = inputStream.read(readBuff)) != -1) {
+						outputStream.write(readBuff, 0, readLen);
+					}
+					
+					//Once the content of the file is copied, this entry to the zip file
+					//needs to be closed. ZipOutputStream updates necessary header information
+					//for this file in this step
+					outputStream.closeEntry();
+					
+					inputStream.close();
+				}
+				
+				//ZipOutputStream now writes zip header information to the zip file
+				outputStream.finish();
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				if (outputStream != null) {
+					try {
+						outputStream.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				if (inputStream != null) {
+					try {
+						inputStream.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+
     		
-//            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-//            ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream);    		
-//    		zipFolder(createProjectFolder(), zipOutputStream);
+			String deployId = "";//metadataConnection.deploy(out.toByteArray(), deployOptions ).getId();
 
-			String deployId = metadataConnection.deploy(Files.readAllBytes(Paths.get(projectBuildDir.substring(0,
-					projectBuildDir.lastIndexOf(File.separator)) + File.separator + "src.zip")), deployOptions ).getId();
-
+			
 			// Wait for the deploy to complete
 	        int poll = 0;
 	        DeployResult deployResult = null;
@@ -147,27 +215,4 @@ public class Deploy
 		deployOptions.setTestLevel(TestLevel.NoTestRun);
 		return deployOptions;
 	}
-
-	private void zipFolder(final File folder, ZipOutputStream zipOutputStream) throws IOException {
-        processFolder(folder, zipOutputStream, folder.getPath().length() + 1);
-    }
-
-    private static void processFolder(final File folder,
-    								  final ZipOutputStream zipOutputStream,
-    								  final int prefixLength) throws IOException {
-        for (final File file : folder.listFiles()) {
-            if (file.isFile()) {
-                final ZipEntry zipEntry = new ZipEntry(file.getPath().substring(prefixLength));
-                zipOutputStream.putNextEntry(zipEntry);
-                
-                try (FileInputStream inputStream = new FileInputStream(file)) {
-                    IOUtils.copy(inputStream, zipOutputStream);
-                }
-        		
-                zipOutputStream.closeEntry();
-            } else if (file.isDirectory()) {
-                processFolder(file, zipOutputStream, prefixLength);
-            }
-        }
-    }    
 }
