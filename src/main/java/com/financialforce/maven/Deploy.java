@@ -34,109 +34,124 @@ import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
 import com.sforce.ws.ConnectorConfig;
 
-@Mojo( name = "compile", defaultPhase = LifecyclePhase.COMPILE )
-public class Deploy
-    extends AbstractMojo
+@Mojo(name = "compile", defaultPhase = LifecyclePhase.COMPILE)
+public class Deploy extends AbstractMojo
 {
 	private static final String SERVICE_ENDPOINT = "/services/Soap/u/34.0";
-	
-    @Parameter(property = "sf.username")
-    private String username;
-    
-    @Parameter(property = "sf.password")
-    private String password;
 
-    @Parameter(property = "sf.serverurl", defaultValue = "https://login.salesforce.com")
-    private String serverUrl;
+	@Parameter(property = "sf.username")
+	private String username;
 
-    @Parameter(property = "deployRoot")
-    private String deployRoot;
-    
-    @Parameter(defaultValue = "${project.build.directory}")
-    private String projectBuildDir;
-    
+	@Parameter(property = "sf.password")
+	private String password;
+
+	@Parameter(property = "sf.serverurl", defaultValue = "https://login.salesforce.com")
+	private String serverUrl;
+
+	@Parameter(property = "deployRoot")
+	private String deployRoot;
+
+	@Parameter(defaultValue = "${project.build.directory}")
+	private String projectBuildDir;
+
 	private MetadataConnection metadataConnection;
 
 	private String projectBaseDir;
 
-    public void execute()
-        throws MojoExecutionException
-    {
-    	initializeProjectBaseDir();
-    	validateMojoParameters();
-    	
-    	try {
-    		createMetadataConnection();
-    		DeployOptions deployOptions = createDeployOptions();
-			byte[] zip = ZipUtil.zipRoot(getFileForPath(this.deployRoot));
-			String deployId = metadataConnection.deploy(zip, deployOptions ).getId();
-			
-	        DeployResult deployResult = null;
-	        
-	        do {
-	            Thread.sleep(1000);
-	            deployResult = metadataConnection.checkDeployStatus(deployId, false);
-	            System.out.println("Status is: " + deployResult.getStatus());
-	        }
-	        
-	        while (!deployResult.isDone());
+	public void execute() throws MojoExecutionException
+	{
+		initializeProjectBaseDir();
+		validateMojoParameters();
 
-	        if (!deployResult.isSuccess() && deployResult.getErrorStatusCode() != null) {
-	            throw new Exception(deployResult.getErrorStatusCode() + " msg: " + deployResult.getErrorMessage());
-	        }
-    	}
-    	catch(Exception e) {
-    		e.printStackTrace();
-    		throw new MojoExecutionException("Deploy MOJO failed to execute", e);
-    	}
-    }
+		try
+		{
+			createMetadataConnection();
+			DeployOptions deployOptions = createDeployOptions();
+			byte[] zip = ZipUtil.zipRoot(getFileForPath(this.deployRoot));
+			String deployId = metadataConnection.deploy(zip, deployOptions)
+					.getId();
+
+			DeployResult deployResult = null;
+
+			do
+			{
+				Thread.sleep(1000);
+				deployResult = metadataConnection.checkDeployStatus(deployId,
+						false);
+				System.out.println("Status is: " + deployResult.getStatus());
+			}
+
+			while (!deployResult.isDone());
+
+			if (!deployResult.isSuccess()
+					&& deployResult.getErrorStatusCode() != null)
+			{
+				throw new Exception(deployResult.getErrorStatusCode()
+						+ " msg: " + deployResult.getErrorMessage());
+			}
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			throw new MojoExecutionException("Deploy MOJO failed to execute", e);
+		}
+	}
 
 	private void initializeProjectBaseDir()
 	{
-		projectBaseDir = this.projectBuildDir.substring(0, projectBuildDir.lastIndexOf(File.separator));
+		projectBaseDir = this.projectBuildDir.substring(0,
+				projectBuildDir.lastIndexOf(File.separator));
 	}
 
-    private void validateMojoParameters() throws MojoExecutionException {
-    	if (StringUtils.isEmpty(this.username)) {
-    		throw new MojoExecutionException("Please specify force-maven-plugin option -Dusername");
-    	}
-    	
-    	if (StringUtils.isEmpty(this.password)) {
-    		throw new MojoExecutionException("Please specify force-maven-plugin option -Dpassword");
-    	}
-    }
-    
-    private void createMetadataConnection()
-        	throws ConnectionException {
-        final ConnectorConfig loginConfig = new ConnectorConfig();
+	private void validateMojoParameters() throws MojoExecutionException
+	{
+		if (StringUtils.isEmpty(this.username))
+		{
+			throw new MojoExecutionException(
+					"Please specify force-maven-plugin option -Dusername");
+		}
+
+		if (StringUtils.isEmpty(this.password))
+		{
+			throw new MojoExecutionException(
+					"Please specify force-maven-plugin option -Dpassword");
+		}
+	}
+
+	private void createMetadataConnection() throws ConnectionException
+	{
+		final ConnectorConfig loginConfig = new ConnectorConfig();
 		loginConfig.setAuthEndpoint(serverUrl + SERVICE_ENDPOINT);
-        loginConfig.setServiceEndpoint(serverUrl + SERVICE_ENDPOINT);
-        loginConfig.setManualLogin(true);
-        
-        
-        LoginResult loginResult  = new PartnerConnection(loginConfig).login(username, password);
-        final ConnectorConfig metadataConfig = new ConnectorConfig();
-        metadataConfig.setServiceEndpoint(loginResult.getMetadataServerUrl());
-        metadataConfig.setSessionId(loginResult.getSessionId());
-        this.metadataConnection = new MetadataConnection(metadataConfig);
-    }
-    
-	private DeployOptions createDeployOptions() {
+		loginConfig.setServiceEndpoint(serverUrl + SERVICE_ENDPOINT);
+		loginConfig.setManualLogin(true);
+
+		LoginResult loginResult = new PartnerConnection(loginConfig).login(
+				username, password);
+		final ConnectorConfig metadataConfig = new ConnectorConfig();
+		metadataConfig.setServiceEndpoint(loginResult.getMetadataServerUrl());
+		metadataConfig.setSessionId(loginResult.getSessionId());
+		this.metadataConnection = new MetadataConnection(metadataConfig);
+	}
+
+	private DeployOptions createDeployOptions()
+	{
 		DeployOptions deployOptions = new DeployOptions();
 		deployOptions.setRollbackOnError(true);
 		deployOptions.setSinglePackage(true);
 		deployOptions.setTestLevel(TestLevel.NoTestRun);
 		return deployOptions;
 	}
-	
-	protected File getFileForPath(String path) {
-    	File file = null;
-    	if (path != null) {
-    		file = new File(projectBaseDir, path);
-    		if (!file.exists()) {
-    			file = new File(path);
-    		}
-    	}
-    	return file;
-    }
+
+	protected File getFileForPath(String path)
+	{
+		File file = null;
+		if (path != null)
+		{
+			file = new File(projectBaseDir, path);
+			if (!file.exists())
+			{
+				file = new File(path);
+			}
+		}
+		return file;
+	}
 }
