@@ -68,26 +68,20 @@ public class Deploy extends AbstractMojo
 			createMetadataConnection();
 			DeployOptions deployOptions = createDeployOptions();
 			byte[] zip = ZipUtil.zipRoot(getFileForPath(this.deployRoot));
-			String deployId = metadataConnection.deploy(zip, deployOptions)
-					.getId();
+			String deployId = metadataConnection.deploy(zip, deployOptions).getId();
 
 			DeployResult deployResult = null;
 
 			do
 			{
 				Thread.sleep(1000);
-				deployResult = metadataConnection.checkDeployStatus(deployId,
-						false);
+				deployResult = metadataConnection.checkDeployStatus(deployId, false);
 				System.out.println("Status is: " + deployResult.getStatus());
-			}
+			} while (!deployResult.isDone());
 
-			while (!deployResult.isDone());
-
-			if (!deployResult.isSuccess()
-					&& deployResult.getErrorStatusCode() != null)
+			if (!deployResult.isSuccess() && deployResult.getErrorStatusCode() != null)
 			{
-				throw new Exception(deployResult.getErrorStatusCode()
-						+ " msg: " + deployResult.getErrorMessage());
+				throw new Exception(deployResult.getErrorStatusCode() + " msg: " + deployResult.getErrorMessage());
 			}
 		} catch (Exception e)
 		{
@@ -98,22 +92,19 @@ public class Deploy extends AbstractMojo
 
 	private void initializeProjectBaseDir()
 	{
-		projectBaseDir = this.projectBuildDir.substring(0,
-				projectBuildDir.lastIndexOf(File.separator));
+		projectBaseDir = this.projectBuildDir.substring(0, projectBuildDir.lastIndexOf(File.separator));
 	}
 
 	private void validateMojoParameters() throws MojoExecutionException
 	{
 		if (StringUtils.isEmpty(this.username))
 		{
-			throw new MojoExecutionException(
-					"Please specify force-maven-plugin option -Dusername");
+			throw new MojoExecutionException("Please specify force-maven-plugin option -Dusername");
 		}
 
 		if (StringUtils.isEmpty(this.password))
 		{
-			throw new MojoExecutionException(
-					"Please specify force-maven-plugin option -Dpassword");
+			throw new MojoExecutionException("Please specify force-maven-plugin option -Dpassword");
 		}
 	}
 
@@ -124,8 +115,7 @@ public class Deploy extends AbstractMojo
 		loginConfig.setServiceEndpoint(serverUrl + SERVICE_ENDPOINT);
 		loginConfig.setManualLogin(true);
 
-		LoginResult loginResult = new PartnerConnection(loginConfig).login(
-				username, password);
+		LoginResult loginResult = new PartnerConnection(loginConfig).login(username, password);
 		final ConnectorConfig metadataConfig = new ConnectorConfig();
 		metadataConfig.setServiceEndpoint(loginResult.getMetadataServerUrl());
 		metadataConfig.setSessionId(loginResult.getSessionId());
