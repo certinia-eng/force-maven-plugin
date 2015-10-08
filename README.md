@@ -1,23 +1,25 @@
+This is a proof of concept to demo how maven could be used as the basis for Salesforce projects. To try things out:
+
 * Clone repo
-* mvn install
-* Create maven  profile in settings.xml
+* mvn install - this will install the force-maven-plugin into your local .m2 repository
+* Create maven profile in ~/.m2/settings.xml
 
         <profile>
-        <id>my-project</id>
-        <properties>
-            <sf.username>xxx</sf.username>
-            <sf.password>xxx</sf.password>
-            <sf.deployRoot>/Users/myuser/myprojectproject/src</sf.deployRoot>
-        </properties>
+            <id>my-project</id>
+            <properties>
+                <sf.username>xxx</sf.username>
+                <sf.password>xxx</sf.password>
+                <sf.deployRoot>/Users/myuser/myprojectproject/src</sf.deployRoot>
+            </properties>
         </profile>
         <activeProfiles>
             <activeProfile>my-project</activeProfile>
         </activeProfiles>
 
-* cd to my-project
-* mvn archetype:generate
+* cd to my-project - assumption is this is a standard salesforce project containing src folder, which contains package.xml
+* Create a skeleton maven project - mvn archetype:generate
 
-Edit pom as follows:
+Edit generated pom as follows:
 
     <project xmlns="http://maven.apache.org/POM/4.0.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -60,4 +62,4 @@ Edit pom as follows:
       </build>
     </project>
 
-* mvn compile
+* To deploy to salesforce, run the standard mvn compile
