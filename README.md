@@ -9,7 +9,6 @@ This is a proof of concept to demo how maven could be used as the basis for Sale
             <properties>
                 <sf.username>xxx</sf.username>
                 <sf.password>xxx</sf.password>
-                <sf.deployRoot>/Users/myuser/myprojectproject/src</sf.deployRoot>
             </properties>
         </profile>
         <activeProfiles>
