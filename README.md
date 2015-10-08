@@ -1,76 +1,61 @@
-Clone repo
-Run 'mvn install'
+* Clone repo
+* mvn install
+* Create maven  profile in settings.xml
 
-Create pom.xml as below
-Run 'mvn compile'
+        <profile>
+        <id>my-project</id>
+        <properties>
+            <sf.username>xxx</sf.username>
+            <sf.password>xxx</sf.password>
+            <sf.deployRoot>/Users/myuser/myprojectproject/src</sf.deployRoot>
+        </properties>
+        </profile>
+        <activeProfiles>
+            <activeProfile>maven-public-repository</activeProfile>
+            <activeProfile>my-project</activeProfile>
+        </activeProfiles>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+* cd to my-project
+* mvn archetype:generate
 
-  <groupId>com.financialforce.*myGroupId*</groupId>
-  <artifactId>*myArtifactId*</artifactId>
-  <version>*myVersion*</version>
-  <!-- <packaging>sar</packaging> -->
+Edit pom as follows:
 
-  <name>*myName*</name>
-  <url>http://maven.apache.org</url>
+    <project xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+        http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+      <groupId>myGroupId</groupId>
+      <artifactId>apex-mocks</artifactId>
+      <version>1.1-SNAPSHOT</version>
+      <!-- <packaging>sar</packaging> -->
 
-  <build>
-    <plugins>
-        <plugin>
-            <groupId>com.financialforce.maven</groupId>
-            <artifactId>force-maven-plugin</artifactId>
-            <version>1.0.1</version>
-            <executions>
-                <execution>
-                    <id>force</id>
-                    <phase>compile</phase>
-                    <goals>
-                        <goal>compile</goal>
-                    </goals>
-                </execution>
-            </executions>
-        </plugin>
-    </plugins>
-    <pluginManagement>
+      <name>apex-mocks</name>
+      <url>http://maven.apache.org</url>
+
+      <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      </properties>
+
+      <build>
         <plugins>
-            <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
             <plugin>
-                <groupId>org.eclipse.m2e</groupId>
-                <artifactId>lifecycle-mapping</artifactId>
-                <version>1.0.0</version>
-                <configuration>
-                    <lifecycleMappingMetadata>
-                        <pluginExecutions>
-                            <pluginExecution>
-                                <pluginExecutionFilter>
-                                    <groupId>
-                                        com.financialforce.maven
-                                    </groupId>
-                                    <artifactId>
-                                        force-maven-plugin
-                                    </artifactId>
-                                    <versionRange>
-                                        [1.0-SNAPSHOT,)
-                                    </versionRange>
-                                    <goals>
-                                        <goal>compile</goal>
-                                    </goals>
-                                </pluginExecutionFilter>
-                                <action>
-                                    <ignore></ignore>
-                                </action>
-                            </pluginExecution>
-                        </pluginExecutions>
-                    </lifecycleMappingMetadata>
-                </configuration>
+                <groupId>com.financialforce.maven</groupId>
+                <artifactId>force-maven-plugin</artifactId>
+                <version>1.0.1</version>
+                <executions>
+                    <execution>
+                        <id>force</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
-    </pluginManagement>
-  </build>
-</project>
+      </build>
+    </project>
+
+* mvn compile
