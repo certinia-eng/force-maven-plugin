@@ -11,7 +11,6 @@
         </properties>
         </profile>
         <activeProfiles>
-            <activeProfile>maven-public-repository</activeProfile>
             <activeProfile>my-project</activeProfile>
         </activeProfiles>
 
@@ -43,7 +42,10 @@ Edit pom as follows:
             <plugin>
                 <groupId>com.financialforce.maven</groupId>
                 <artifactId>force-maven-plugin</artifactId>
-                <version>1.0.1</version>
+                <version>1.0.2</version>
+                <configuration>
+                    <deployRoot>src</deployRoot>
+                </configuration>
                 <executions>
                     <execution>
                         <id>force</id>

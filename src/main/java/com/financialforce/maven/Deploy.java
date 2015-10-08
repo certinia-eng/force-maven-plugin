@@ -49,7 +49,7 @@ public class Deploy
     @Parameter(property = "sf.serverurl", defaultValue = "https://login.salesforce.com")
     private String serverUrl;
 
-    @Parameter(property = "sf.deployRoot")
+    @Parameter(property = "deployRoot")
     private String deployRoot;
     
     @Parameter(defaultValue = "${project.build.directory}")
