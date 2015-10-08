@@ -27,11 +27,11 @@ Edit pom as follows:
     <modelVersion>4.0.0</modelVersion>
 
       <groupId>myGroupId</groupId>
-      <artifactId>apex-mocks</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <artifactId>myArtifactId</artifactId>
+      <version>myVersion</version>
       <!-- <packaging>sar</packaging> -->
 
-      <name>apex-mocks</name>
+      <name>myProjectName</name>
       <url>http://maven.apache.org</url>
 
       <properties>
